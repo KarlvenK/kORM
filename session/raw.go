@@ -2,22 +2,27 @@ package session
 
 import (
 	"database/sql"
+	"github.com/KarlvenK/korm/dialect"
 	"github.com/KarlvenK/korm/log"
+	"github.com/KarlvenK/korm/schema"
 	"strings"
 )
 
 //Session keeps a pointer to sql.DB and provides all execution of all
 //kind of database operation
 type Session struct {
-	db      *sql.DB
-	sql     strings.Builder
-	sqlVars []interface{}
+	db       *sql.DB
+	dialect  dialect.Dialect
+	refTable *schema.Schema
+	sql      strings.Builder
+	sqlVars  []interface{}
 }
 
 //New creates a instance of Session
-func New(db *sql.DB) *Session {
+func New(db *sql.DB, dialect dialect.Dialect) *Session {
 	return &Session{
-		db: db,
+		db:      db,
+		dialect: dialect,
 	}
 }
 

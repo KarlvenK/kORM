@@ -8,18 +8,18 @@ import (
 
 //Field represents a column of database
 type Field struct {
-	Name 	string
-	Type 	string
-	Tag 	string //约束条件，例如非空、主键等
+	Name string
+	Type string
+	Tag  string //约束条件，例如非空、主键等
 }
 
 //Schema represents a table of database
 type Schema struct {
-	Model 		interface{}
-	Name 		string
-	Fields 		[]*Field
-	FieldNames 	[]string
-	fieldMap 	map[string]*Field
+	Model      interface{}
+	Name       string
+	Fields     []*Field
+	FieldNames []string
+	fieldMap   map[string]*Field
 }
 
 //GetField returns field by name
@@ -31,8 +31,8 @@ func (schema *Schema) GetField(name string) *Field {
 func Parse(dest interface{}, d dialect.Dialect) *Schema {
 	modelType := reflect.Indirect(reflect.ValueOf(dest)).Type()
 	schema := &Schema{
-		Model: dest,
-		Name: modelType.Name(),
+		Model:    dest,
+		Name:     modelType.Name(),
 		fieldMap: make(map[string]*Field),
 	}
 
