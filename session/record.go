@@ -1,6 +1,7 @@
 package session
 
 import (
+	"errors"
 	"github.com/KarlvenK/korm/clause"
 	"reflect"
 )
@@ -75,11 +76,9 @@ func (s *Session) Update(kv ...interface{}) (int64, error) {
 			m[kv[i].(string)] = kv[i+1]
 		}
 	}
-
 	s.clause.Set(clause.UPDATE, s.RefTable().Name, m)
 	sql, vars := s.clause.Build(clause.UPDATE, clause.WHERE)
 	result, err := s.Raw(sql, vars...).Exec()
-
 	if err != nil {
 		return 0, err
 	}
@@ -107,4 +106,38 @@ func (s *Session) Count() (int64, error) {
 		return 0, err
 	}
 	return tmp, nil
+}
+
+/*
+WHERE LIMIT ORDER BY 适合链式调用
+*/
+
+func (s *Session) Limit(num int) *Session {
+	s.clause.Set(clause.LIMIT, num)
+	return s
+}
+
+func (s *Session) Where(desc string, args ...interface{}) *Session {
+	var vars []interface{}
+	s.clause.Set(clause.WHERE, append(append(vars, desc), args...)...)
+	return s
+}
+
+func (s *Session) OrderBy(desc string) *Session {
+	s.clause.Set(clause.ORDERBY, desc)
+	return s
+}
+
+//First returns the 1st row
+func (s *Session) First(value interface{}) error {
+	dest := reflect.Indirect(reflect.ValueOf(value))
+	destSlice := reflect.New(reflect.SliceOf(dest.Type())).Elem()
+	if err := s.Limit(1).Find(destSlice.Addr().Interface()); err != nil {
+		return err
+	}
+	if destSlice.Len() == 0 {
+		return errors.New("NOT FOUND")
+	}
+	dest.Set(destSlice.Index(0))
+	return nil
 }
